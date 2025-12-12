@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".fragment.MainFragment">
+
+    <!-- ✅ 新增：左右对齐辅助线（10dp 边距） -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.02676399" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.98053527" />
+
+
+    <!-- 自定义效果区域 + 图片展示区（合并） -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topImageViewContainer"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <!-- 固定图片展示 -->
+        <ImageView
+            android:id="@+id/staticImageView"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:background="@android:color/transparent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_welcome"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <!-- 自定义视图区域 -->
+        <com.example.recyclerview.view.SweepLightOverlayView
+            android:id="@+id/customEffectView"
+            android:layout_width="414dp"
+            android:layout_height="201dp"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 🔧 按钮容器：约束到 guideline，取消 paddingHorizontal -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:layout_constraintLeft_toLeftOf="@id/guidelineLeft"
+        app:layout_constraintRight_toRightOf="@id/guidelineRight"
+        app:layout_constraintTop_toBottomOf="@+id/topImageViewContainer">
+
+        <!-- 第一行：两个大按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/importPhotoButton"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:text="导入照片"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/btn_primary_background"
+            app:cornerRadius="6dp"
+            app:icon="@drawable/ic_import"
+            app:iconGravity="textStart"
+            app:iconPadding="16dp"
+            app:iconSize="24dp"
+            app:iconTint="#bbf549"
+            app:layout_constraintEnd_toStartOf="@+id/row1Space"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 第一行中间间距 -->
+        <Space
+            android:id="@+id/row1Space"
+            android:layout_width="16dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/importPhotoButton"
+            app:layout_constraintEnd_toStartOf="@+id/cameraButton"
+            app:layout_constraintStart_toEndOf="@+id/importPhotoButton"
+            app:layout_constraintTop_toTopOf="@+id/importPhotoButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cameraButton"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:text="相机"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="#bbf549"
+            app:cornerRadius="6dp"
+            app:icon="@drawable/ic_camera"
+            app:iconGravity="textStart"
+            app:iconPadding="16dp"
+            app:iconSize="24dp"
+            app:iconTint="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/row1Space"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 第二行：三个小按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/liveEditButton"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="16dp"
+            android:text="实况"
+            android:textColor="@color/btn_secondary_text"
+            android:textSize="12sp"
+            app:backgroundTint="@color/btn_secondary_background"
+            app:cornerRadius="6dp"
+            app:icon="@drawable/ic_living"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconSize="15dp"
+            app:iconTint="@color/btn_secondary_icon"
+            app:layout_constraintEnd_toStartOf="@+id/row2Space1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/importPhotoButton" />
+
+        <Space
+            android:id="@+id/row2Space1"
+            android:layout_width="12dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/liveEditButton"
+            app:layout_constraintEnd_toStartOf="@+id/faceEditButton"
+            app:layout_constraintStart_toEndOf="@+id/liveEditButton"
+            app:layout_constraintTop_toTopOf="@+id/liveEditButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/faceEditButton"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:text="人像"
+            android:textColor="@color/btn_secondary_text"
+            android:textSize="12sp"
+            app:backgroundTint="@color/btn_secondary_background"
+            app:cornerRadius="6dp"
+            app:icon="@drawable/ic_face"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconSize="15dp"
+            app:iconTint="@color/btn_secondary_icon"
+            app:layout_constraintEnd_toStartOf="@+id/row2Space2"
+            app:layout_constraintStart_toEndOf="@+id/row2Space1"
+            app:layout_constraintTop_toTopOf="@+id/liveEditButton" />
+
+        <Space
+            android:id="@+id/row2Space2"
+            android:layout_width="12dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/faceEditButton"
+            app:layout_constraintEnd_toStartOf="@+id/puzzleEditButton"
+            app:layout_constraintStart_toEndOf="@+id/faceEditButton"
+            app:layout_constraintTop_toTopOf="@+id/faceEditButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/puzzleEditButton"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:text="拼图"
+            android:textColor="@color/btn_secondary_text"
+            android:textSize="12sp"
+            app:backgroundTint="@color/btn_secondary_background"
+            app:cornerRadius="6dp"
+            app:icon="@drawable/ic_puzzle"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconSize="15dp"
+            app:iconTint="@color/btn_secondary_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/row2Space2"
+            app:layout_constraintTop_toTopOf="@+id/liveEditButton" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- ✅ 作品集标题：对齐到同 guideline -->
+    <TextView
+        android:id="@+id/historyEdits"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="作品集"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="@id/guidelineLeft"
+        app:layout_constraintRight_toRightOf="@id/guidelineRight"
+        app:layout_constraintTop_toBottomOf="@+id/buttonContainer" />
+
+    <!-- ✅ RecyclerView：对齐到同 guideline -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/portfolioRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/guidelineLeft"
+        app:layout_constraintRight_toRightOf="@id/guidelineRight"
+        app:layout_constraintTop_toBottomOf="@+id/historyEdits" />
+
+    <!-- 底部辅助线（可删） -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="731dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

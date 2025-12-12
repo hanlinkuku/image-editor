@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 配置缓存目录 -->
+    <cache-path name="cache_files" path="./" />
+    <!-- 配置外部存储目录 -->
+    <external-path name="external_files" path="./" />
+</paths>

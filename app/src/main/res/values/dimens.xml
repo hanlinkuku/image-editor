@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 网格间距 -->
+    <dimen name="grid_spacing">8dp</dimen>
+    
+    <!-- 底部导航栏 -->
+    <dimen name="bottom_nav_padding">16dp</dimen>
+    
+    <!-- 按钮边距 -->
+    <dimen name="button_margin_start">10dp</dimen>
+    <dimen name="button_margin_end">10dp</dimen>
+    <dimen name="button_margin_small">5dp</dimen>
+    <dimen name="button_margin_top">8dp</dimen>
+    
+    <!-- 按钮容器 -->
+    <dimen name="button_container_margin_top">4dp</dimen>
+    <dimen name="button_container_padding_top">16dp</dimen>
+    
+    <!-- 标题 -->
+    <dimen name="title_margin_top">24dp</dimen>
+    <dimen name="title_text_size">20sp</dimen>
+    
+    <!-- RecyclerView -->
+    <dimen name="recycler_margin_side">10dp</dimen>
+    <dimen name="recycler_margin_top">8dp</dimen>
+</resources>

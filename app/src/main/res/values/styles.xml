@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 按钮文字样式 -->
+    <style name="WhiteButtonText">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:gravity">center</item>
+    </style>
+    
+    <!-- 选中状态的按钮文字样式 -->
+    <style name="WhiteButtonText.Selected">
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="CircleImageStyle">
+        <item name="cornerSize">50%</item>
+    </style>
+</resources>

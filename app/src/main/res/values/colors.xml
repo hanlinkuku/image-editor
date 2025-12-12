@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="green">#FF4CAF50</color>
+    <color name="light_green">#FF8BC34A</color>
+    <!-- 主按钮：黑色背景 -->
+    <color name="btn_primary_background">#000000</color>
+    <color name="btn_primary_text">#7FFF00</color> <!-- 荧光绿文字 -->
+    <color name="btn_primary_icon">#7FFF00</color> <!-- 荧光绿图标 -->
+
+    <!-- 次级按钮：浅绿背景 -->
+    <color name="btn_secondary_background">#E6F9D4</color> <!-- 浅绿 -->
+    <color name="btn_secondary_text">#2E7D32</color> <!-- 深绿文字 -->
+    <color name="btn_secondary_icon">#2E7D32</color> <!-- 深绿图标 -->
+</resources>
