@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -60,7 +61,7 @@
         <!-- FileProvider配置 -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.recyclerview.fileprovider"
+            android:authorities="com.hanlin.image_editor_hanlin.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

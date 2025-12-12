@@ -43,7 +43,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
         <!-- 自定义视图区域 -->
-        <com.example.recyclerview.view.SweepLightOverlayView
+        <com.hanlin.image_editor_hanlin.view.SweepLightOverlayView
             android:id="@+id/customEffectView"
             android:layout_width="414dp"
             android:layout_height="201dp"

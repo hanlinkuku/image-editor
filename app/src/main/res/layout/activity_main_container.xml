@@ -35,7 +35,7 @@
         app:layout_constraintVertical_bias="1.0">
 
         <!-- 首页按钮 -->
-        <com.example.recyclerview.widget.UnderlineButton
+        <com.hanlin.image_editor_hanlin.widget.UnderlineButton
             android:id="@+id/homeButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
             android:text="首页" />
 
         <!-- 我的按钮 -->
-        <com.example.recyclerview.widget.UnderlineButton
+        <com.hanlin.image_editor_hanlin.widget.UnderlineButton
             android:id="@+id/profileButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

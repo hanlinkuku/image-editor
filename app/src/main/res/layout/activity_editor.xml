@@ -126,12 +126,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <com.example.recyclerview.view.ImageEditorView
+        <com.hanlin.image_editor_hanlin.view.ImageEditorView
             android:id="@+id/glEditor"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <com.example.recyclerview.view.CropOverlayView
+        <com.hanlin.image_editor_hanlin.view.CropOverlayView
             android:id="@+id/cropOverlayView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

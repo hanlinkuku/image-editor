@@ -6,7 +6,7 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # 保留应用入口类和四大组件
--keep public class com.example.recyclerview.MainActivity {
+-keep public class com.hanlin.image_editor_hanlin.MainActivity {
     public *;
 }
 -keep public class * extends android.app.Activity
@@ -14,8 +14,23 @@
 -keep public class * extends android.content.BroadcastReceiver
 -keep public class * extends android.content.ContentProvider
 
+# 保留Fragment类
+-keep public class * extends androidx.fragment.app.Fragment
+-keep public class * extends android.app.Fragment
+
+# 保留Activity的Intent和Bundle相关方法
+-keepclassmembers class * extends android.app.Activity {
+    public void *(android.view.View);
+    protected void onCreate(android.os.Bundle);
+    protected void onSaveInstanceState(android.os.Bundle);
+    protected void onRestoreInstanceState(android.os.Bundle);
+}
+
 # 保留 Gson 序列化/反序列化类
--keep class com.example.recyclerview.model.** {
+-keep class com.hanlin.image_editor_hanlin.model.** {
+    *;
+}
+-keep class com.hanlin.image_editor_hanlin.entity.** {
     *;
 }
 -keep class com.google.gson.** {
@@ -68,11 +83,44 @@
     *;
 }
 
+# 保留自定义Adapter类
+-keep public class * extends androidx.recyclerview.widget.RecyclerView$Adapter
+-keep public class * extends androidx.recyclerview.widget.RecyclerView$ViewHolder
+
+# 保留自定义Helper类
+-keep class com.hanlin.image_editor_hanlin.helper.** {
+    *;
+}
+
+# 保留SQLite数据库相关类
+-keep class com.hanlin.image_editor_hanlin.database.** {
+    *;
+}
+-keep class com.hanlin.image_editor_hanlin.helper.DatabaseHelper {
+    *;
+}
+
 # 保留 CameraX 相关类
 -keep class androidx.camera.** {
     *;
 }
 -dontwarn androidx.camera.**
+
+# 保留自定义View和Widget类
+-keep public class com.hanlin.image_editor_hanlin.view.** {
+    public protected *;
+}
+-keep public class com.hanlin.image_editor_hanlin.widget.** {
+    public protected *;
+}
+
+# 保留布局文件中引用的自定义View构造函数
+-keep public class * extends android.view.View {
+    public <init>(android.content.Context);
+    public <init>(android.content.Context, android.util.AttributeSet);
+    public <init>(android.content.Context, android.util.AttributeSet, int);
+    public void set*(...);
+}
 
 # 保留注解
 -keepattributes *Annotation*
