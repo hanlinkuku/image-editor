@@ -45,7 +45,7 @@ class ImageInfoAdapter(
         // 放大按钮点击 → 预览
         holder.imageView2.setOnClickListener(View.OnClickListener { v: View? ->
             val intent = Intent(context, ImagePreviewActivity::class.java)
-            intent.putExtra("image_list", imageList as ArrayList<ImageInfoBean?>)
+            intent.putExtra("image_list", ArrayList(imageList))
             intent.putExtra("position", position)
             context.startActivity(intent)
         })

@@ -1,5 +1,6 @@
 package com.example.recyclerview.activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -22,7 +23,7 @@ class ExportSuccessActivity : AppCompatActivity() {
         // 初始化控件
         val btnBackToEdit = findViewById<ImageView>(R.id.btnBackToEdit)
         val btnHome = findViewById<ImageView>(R.id.btnHome)
-        imgExported = findViewById<ImageView>(R.id.imgExported)
+        imgExported = findViewById(R.id.imgExported)
         val btnBackToMain = findViewById<Button>(R.id.btnBackToMain)
 
         // 获取传递过来的图片URI
@@ -36,40 +37,41 @@ class ExportSuccessActivity : AppCompatActivity() {
         }
 
         // 设置返回编辑页按钮的点击事件
-        btnBackToEdit.setOnClickListener(View.OnClickListener { v: View? ->
+        btnBackToEdit.setOnClickListener { v: View? ->
             // 返回编辑页，与点击图片进入编辑页的思路一致
             val editIntent = Intent(this@ExportSuccessActivity, EditorActivity::class.java)
             editIntent.putExtra("image_uri", mImageUriString)
             editIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(editIntent)
             finish()
-        })
+        }
 
         // 设置主页按钮的点击事件
-        btnHome.setOnClickListener(View.OnClickListener { v: View? ->
+        btnHome.setOnClickListener { v: View? ->
             // 返回主页
             val homeIntent = Intent(this@ExportSuccessActivity, MainContainerActivity::class.java)
             homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(homeIntent)
             finish()
-        })
+        }
 
         // 设置再修一张按钮的点击事件
-        btnBackToMain.setOnClickListener(View.OnClickListener { v: View? ->
+        btnBackToMain.setOnClickListener { v: View? ->
             // 再修一张，返回相册选择页
             val galleryIntent = Intent(this@ExportSuccessActivity, GalleryActivity::class.java)
             galleryIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(galleryIntent)
             finish()
-        })
+        }
     }
 
+    @SuppressLint("UseKtx")
     private fun displayImage(imageUriString: String?) {
         try {
             val imageUri = Uri.parse(imageUriString)
-            val bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri))
+            val bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri))
             imgExported!!.setImageBitmap(bitmap)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Log.e("displayImage", "failed")
         }
     }

@@ -35,7 +35,7 @@ class MainContainerActivity : AppCompatActivity() {
 
         // 底部导航栏适配（保留你的 padding 逻辑）
         val bottomNavBar = findViewById<LinearLayout>(R.id.bottomNavBar)
-        bottomNavBar.setOnApplyWindowInsetsListener(View.OnApplyWindowInsetsListener { v: View?, insets: WindowInsets? ->
+        bottomNavBar.setOnApplyWindowInsetsListener { v: View?, insets: WindowInsets? ->
             val controller = v!!.getWindowInsetsController()
             if (controller != null) {
                 controller.setSystemBarsAppearance(
@@ -52,7 +52,7 @@ class MainContainerActivity : AppCompatActivity() {
                 bottomInset + getResources().getDimensionPixelSize(R.dimen.bottom_nav_padding)
             )
             insets
-        })
+        }
         // 初始化ViewPager
         viewPager = findViewById<ViewPager2>(R.id.viewPager)
         viewPager!!.setAdapter(object : FragmentStateAdapter(this) {
@@ -85,14 +85,14 @@ class MainContainerActivity : AppCompatActivity() {
         updateBottomNavBar(0)
 
         // 首页按钮点击事件
-        homeButton!!.setOnClickListener(View.OnClickListener { v: View? ->
+        homeButton!!.setOnClickListener { v: View? ->
             viewPager!!.setCurrentItem(0, true) // true表示有滑动动画
-        })
+        }
 
         // 我的按钮点击事件
-        profileButton!!.setOnClickListener(View.OnClickListener { v: View? ->
+        profileButton!!.setOnClickListener { v: View? ->
             viewPager!!.setCurrentItem(1, true) // true表示有滑动动画
-        })
+        }
     }
 
     // 更新底部导航栏的选中状态

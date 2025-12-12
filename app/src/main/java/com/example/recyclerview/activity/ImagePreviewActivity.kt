@@ -23,12 +23,15 @@ class ImagePreviewActivity : AppCompatActivity() {
             .getSerializableExtra("image_list") as MutableList<ImageInfoBean?>?
         val position = getIntent().getIntExtra("position", 0)
 
-        if (imageList == null || imageList.isEmpty()) {
+        // 过滤掉空元素并转换为非空列表
+        val nonNullImageList = imageList?.filterNotNull()?.toMutableList() ?: mutableListOf()
+
+        if (nonNullImageList.isEmpty()) {
             finish()
             return
         }
 
-        val adapter = PreviewAdapter(imageList)
+        val adapter = PreviewAdapter(nonNullImageList)
         viewPager.setAdapter(adapter)
         viewPager.setCurrentItem(position, false)
 

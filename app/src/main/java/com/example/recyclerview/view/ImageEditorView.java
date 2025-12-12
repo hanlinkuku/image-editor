@@ -74,7 +74,7 @@ public class ImageEditorView extends GLSurfaceView {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
                 if (mRenderer != null) {
-                    mRenderer.resetTransformToFit(); 
+                    mRenderer.resetTransformToFit();
                     requestRender();                  // 立即刷新
                 }
                 return true;
@@ -99,7 +99,7 @@ public class ImageEditorView extends GLSurfaceView {
 
         // 3️计算缩放后的新中心偏移
         // 要求: focus 在缩放前后位置不变 → 解出 T'
-        float oldScale = mRenderer.getScale(); 
+        float oldScale = mRenderer.getScale();
         float newScale = oldScale * scaleFactor;
         newScale = Math.max(MIN_SCALE, Math.min(newScale, MAX_SCALE));
 
@@ -185,10 +185,10 @@ public class ImageEditorView extends GLSurfaceView {
             }
         }
 
-   
-        requestRender();  
 
-        return true;  
+        requestRender();
+
+        return true;
     }
 
     //暴露给 Activity 的 loadImage 接口
@@ -222,7 +222,7 @@ public class ImageEditorView extends GLSurfaceView {
             mRenderer.setSharpness(sharpness);
         }
     }
-    
+
     // 批量设置调整参数，减少render调用次数，提高性能
     public void setAdjustments(float brightness, float contrast, float saturation, float sharpness) {
         if (mRenderer != null) {
@@ -289,14 +289,14 @@ public class ImageEditorView extends GLSurfaceView {
     public void setCropRegion(float left, float top, float right, float bottom) {
         if (mRenderer != null) mRenderer.setCropRegion(left, top, right, bottom);
     }
-    
+
     // 设置滤镜类型
     public void setFilterType(int filterType) {
         if (mRenderer != null) {
             mRenderer.setFilterType(filterType);
         }
     }
-    
+
     // 获取当前滤镜类型
     public int getFilterType() {
         if (mRenderer != null) {
