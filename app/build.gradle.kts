@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.recyclerview"
-        minSdk = 24
+        minSdk = 30
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -18,15 +18,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // signingConfigs {
+    //     create("release") {
+    //         storeFile = file("keystore/debug-upload.jks")
+    //         storePassword = "android"
+    //         keyAlias = "upload"
+    //         keyPassword = "android"
+    //     }
+    // }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // 暂时禁用签名配置，避免构建失败
+            // signingConfig = signingConfigs.getByName("release")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
