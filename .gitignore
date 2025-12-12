@@ -1,3 +1,7 @@
+# APK/AAB outputs
+*.apk
+*.aab
+
 *.iml
 .gradle
 /local.properties
