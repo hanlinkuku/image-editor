@@ -12,6 +12,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -21,13 +24,32 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class ImageEditorRenderer implements GLSurfaceView.Renderer {
-    private String mPendingUriString = null;
+    private volatile String mPendingUriString = null;
+    // 线程池，用于处理图片解码和处理操作
+    private final ExecutorService mImageProcessingExecutor = Executors.newSingleThreadExecutor();
+    // 主线程Handler，用于防抖机制
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    // 防抖间隔时间（毫秒）
+    private static final long DEBOUNCE_INTERVAL_MS = 16; // 约60fps
+    // 防抖Runnable
+    private final Runnable mRenderRunnable = this::requestRenderDebounced;
 
     private volatile int mTextureId = 0;
     private volatile int mImageWidth = 0;
     private volatile int mImageHeight = 0;
     private static final String TAG = "ImageEditorApp";
     private final GLSurfaceView mSurfaceView;
+
+    // 防抖渲染请求
+    private void requestRenderDebounced() {
+        mSurfaceView.requestRender();
+    }
+    
+    // 防抖请求渲染方法
+    private void requestRender() {
+        mMainHandler.removeCallbacks(mRenderRunnable);
+        mMainHandler.postDelayed(mRenderRunnable, DEBOUNCE_INTERVAL_MS);
+    }
 
     // 在 ImageEditorRenderer 中新增字段：
     private final int[] mCachedViewport = new int[4];
@@ -63,6 +85,63 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
     // 获取当前滤镜类型
     public int getFilterType() {
         return mCurrentFilter;
+    }
+
+    // 调整参数的setter方法
+    public void setBrightness(final float brightness) {
+        mSurfaceView.queueEvent(() -> {
+            mBrightness = Math.max(-1.0f, Math.min(1.0f, brightness));
+            requestRender();
+        });
+    }
+
+    public void setContrast(final float contrast) {
+        mSurfaceView.queueEvent(() -> {
+            mContrast = Math.max(0.0f, Math.min(3.0f, contrast));
+            requestRender();
+        });
+    }
+
+    public void setSaturation(final float saturation) {
+        mSurfaceView.queueEvent(() -> {
+            mSaturation = Math.max(0.0f, Math.min(3.0f, saturation));
+            requestRender();
+        });
+    }
+
+    public void setSharpness(final float sharpness) {
+        mSurfaceView.queueEvent(() -> {
+            mSharpness = Math.max(-1.0f, Math.min(1.0f, sharpness));
+            requestRender();
+        });
+    }
+
+    // 批量设置调整参数，减少render调用次数
+    public void setAdjustments(float brightness, float contrast, float saturation, float sharpness) {
+        mSurfaceView.queueEvent(() -> {
+            mBrightness = Math.max(-1.0f, Math.min(1.0f, brightness));
+            mContrast = Math.max(0.0f, Math.min(3.0f, contrast));
+            mSaturation = Math.max(0.0f, Math.min(3.0f, saturation));
+            mSharpness = Math.max(-1.0f, Math.min(1.0f, sharpness));
+            requestRender();
+        });
+    }
+
+    // 获取当前调整参数
+    public float getBrightness() {
+        return mBrightness;
+    }
+
+    public float getContrast() {
+        return mContrast;
+    }
+
+    public float getSaturation() {
+        return mSaturation;
+    }
+
+    public float getSharpness() {
+        return mSharpness;
     }
     // 移除原固定 VERTICES/TEX_COORDS —— 改为动态计算
     // 旋转角度（度数）
@@ -115,8 +194,7 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
                         "uniform float uSharpness;\n" +
                         "varying vec2 vCoord;\n" +
                         "\n" +
-                        "// 锐化卷积核
-" +
+                        "// 锐化卷积核\n" +
                         "float sharpen(vec2 texCoord, sampler2D texture) {\n" +
                         "  float dx = 1.0 / 512.0;\n" +
                         "  float dy = 1.0 / 512.0;\n" +
@@ -168,12 +246,11 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
                         "    result.rgb = mix(result.rgb, sharpened, uSharpness);\n" +
                         "  }\n" +
                         "\n" +
-                        "  // 确保颜色值在有效范围内
-" +
+                        "  // 确保颜色值在有效范围内\n" +
                         "  result.rgb = clamp(result.rgb, 0.0, 1.0);\n" +
                         "\n" +
                         "  gl_FragColor = result;\n" +
-                        "};
+                        "}\n";
 
         int vs = loadShader(GLES20.GL_VERTEX_SHADER, vertexShader);
         int fs = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
@@ -580,17 +657,24 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
     }
 
     private void loadImageFromUri(Uri uri) {
-        mSurfaceView.queueEvent(() -> {
+        Context context = mSurfaceView.getContext();
+        
+        // 将图片解码和处理操作提交到线程池
+        mImageProcessingExecutor.execute(() -> {
             try {
-                Context context = mSurfaceView.getContext();
+                // 1. 在工作线程中进行图片解码和处理
+                final Bitmap processedBitmap;
+                final int imageWidth;
+                final int imageHeight;
+                
                 try (InputStream is = context.getContentResolver().openInputStream(uri)) {
                     if (is == null) throw new RuntimeException("InputStream null for " + uri);
 
                     BitmapFactory.Options opts = new BitmapFactory.Options();
                     opts.inJustDecodeBounds = true;
                     BitmapFactory.decodeStream(is, null, opts);
-                    mImageWidth = opts.outWidth;
-                    mImageHeight = opts.outHeight;
+                    imageWidth = opts.outWidth;
+                    imageHeight = opts.outHeight;
 
                     try (InputStream is2 = context.getContentResolver().openInputStream(uri)) {
                         opts.inSampleSize = Math.max(1, Math.min(
@@ -605,9 +689,23 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
                         if (bitmap.getConfig() == null) {
                             Bitmap converted = bitmap.copy(Bitmap.Config.ARGB_8888, false);
                             bitmap.recycle();
-                            bitmap = converted;
+                            processedBitmap = converted;
+                        } else {
+                            processedBitmap = bitmap;
                         }
-
+                    }
+                }
+                
+                // 保存最终的位图引用，用于后续在GL线程中使用
+                final Bitmap finalBitmap = processedBitmap;
+                final int finalWidth = imageWidth;
+                final int finalHeight = imageHeight;
+                
+                // 2. 当图片处理完成后，在GL线程中创建纹理和渲染
+                mSurfaceView.queueEvent(() -> {
+                    try {
+                        if (mProgram == 0) return;
+                        
                         if (mTextureId != 0) {
                             GLES20.glDeleteTextures(1, new int[]{mTextureId}, 0);
                         }
@@ -615,38 +713,49 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
                         GLES20.glGenTextures(1, tex, 0);
                         if (tex[0] == 0) {
                             Log.e(TAG, "❌ glGenTextures failed! GL Error: 0x" + Integer.toHexString(GLES20.glGetError()));
-                            throw new RuntimeException("Texture ID allocation failed");
+                            finalBitmap.recycle();
+                            return;
                         }
                         mTextureId = tex[0];
                         Log.d(TAG, "✅ New texture ID: " + mTextureId);
 
+                        // 设置纹理参数并上传数据
                         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
                         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
                         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
                         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
                         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-                        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+                        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, finalBitmap, 0);
                         int err = GLES20.glGetError();
                         if (err != GLES20.GL_NO_ERROR) {
                             Log.e(TAG, "texImage2D GL error: 0x" + Integer.toHexString(err));
                         }
-                        bitmap.recycle();
+                        
+                        // 回收位图
+                        finalBitmap.recycle();
 
+                        // 更新图片尺寸
+                        mImageWidth = finalWidth;
+                        mImageHeight = finalHeight;
+                        
                         // 加载后更新顶点 & 重置变换
                         resetTransformToFit();
                         updateQuadVertices(); //立即更新顶点
 
                         Log.d(TAG, "✅ Texture loaded: " + mImageWidth + "x" + mImageHeight + " from " + uri);
                         mSurfaceView.requestRender();
+                    } catch (Exception e) {
+                        Log.e(TAG, "❌ Texture creation failed: " + uri, e);
+                        finalBitmap.recycle();
                     }
-                }
+                });
             } catch (Exception e) {
-                Log.e(TAG, "❌ loadImageFromUri failed: " + uri, e);
+                Log.e(TAG, "❌ Image processing failed: " + uri, e);
             }
         });
     }
 
-    //修改：仅重置用户变换，比例由顶点控制
+    // 修改：仅重置用户变换，比例由顶点控制
     public void resetTransformToFit() {
         mScale = 1.0f;
         mTranslateX = 0.0f;
@@ -658,17 +767,32 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
         mCropRight = 1.0f; mCropBottom = 1.0f;
     }
 
+    // 重置所有调整参数到默认值
+    public void resetAdjustments() {
+        mSurfaceView.queueEvent(() -> {
+            mBrightness = 0.0f;
+            mContrast = 1.0f;
+            mSaturation = 1.0f;
+            mSharpness = 0.0f;
+            mSurfaceView.requestRender();
+        });
+    }
+
     // 公开方法：供手势控制调用
     public void setScale(float scale) {
-        mScale = Math.max(0.3f, Math.min(scale, 10.0f));
-        mSurfaceView.requestRender();
+        mSurfaceView.queueEvent(() -> {
+            mScale = Math.max(0.3f, Math.min(scale, 10.0f));
+            requestRender();
+        });
     }
 
 
     public void setTranslate(float dx, float dy) {
-        mTranslateX += dx;
-        mTranslateY += dy;
-        mSurfaceView.requestRender();
+        mSurfaceView.queueEvent(() -> {
+            mTranslateX += dx;
+            mTranslateY += dy;
+            requestRender();
+        });
     }
 
     public float getTranslateX() {
@@ -681,27 +805,31 @@ public class ImageEditorRenderer implements GLSurfaceView.Renderer {
 
     // 旋转控制方法
     public void rotate(float degrees) {
-        mRotation += degrees;
-        // 保持角度在 [0, 360) 范围内
-        while (mRotation >= 360.0f) {
-            mRotation -= 360.0f;
-        }
-        while (mRotation < 0.0f) {
-            mRotation += 360.0f;
-        }
-        mSurfaceView.requestRender();
+        mSurfaceView.queueEvent(() -> {
+            mRotation += degrees;
+            // 保持角度在 [0, 360) 范围内
+            while (mRotation >= 360.0f) {
+                mRotation -= 360.0f;
+            }
+            while (mRotation < 0.0f) {
+                mRotation += 360.0f;
+            }
+            requestRender();
+        });
     }
 
     public void setRotation(float degrees) {
-        mRotation = degrees;
-        // 保持角度在 [0, 360) 范围内
-        while (mRotation >= 360.0f) {
-            mRotation -= 360.0f;
-        }
-        while (mRotation < 0.0f) {
-            mRotation += 360.0f;
-        }
-        mSurfaceView.requestRender();
+        mSurfaceView.queueEvent(() -> {
+            mRotation = degrees;
+            // 保持角度在 [0, 360) 范围内
+            while (mRotation >= 360.0f) {
+                mRotation -= 360.0f;
+            }
+            while (mRotation < 0.0f) {
+                mRotation += 360.0f;
+            }
+            requestRender();
+        });
     }
 
     public float getRotation() {

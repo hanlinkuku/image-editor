@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,6 +52,13 @@ public class EditorActivity extends AppCompatActivity {
     private ImageView mUndoButton;
     private ImageView mRedoButton;
     private ImageView mApplyButton;
+
+    // 调整功能相关
+    private View mAdjustmentSeekBarContainer;
+    private TextView mAdjustmentLabel;
+    private SeekBar mAdjustmentSeekBar;
+    private TextView mAdjustmentValue;
+    private int mCurrentAdjustmentType = 601; // 默认亮度
 
     // 当前选中的功能ID
     private int mCurrentFeatureId = -1;
@@ -89,6 +98,61 @@ public class EditorActivity extends AppCompatActivity {
         mUndoButton = findViewById(R.id.btnUndo);
         mRedoButton = findViewById(R.id.btnRedo);
         mApplyButton = findViewById(R.id.btnApply);
+
+        // 初始化调整功能UI组件
+        mAdjustmentSeekBarContainer = findViewById(R.id.adjustmentSeekBarContainer);
+        mAdjustmentLabel = findViewById(R.id.adjustmentLabel);
+        mAdjustmentSeekBar = findViewById(R.id.adjustmentSeekBar);
+        mAdjustmentValue = findViewById(R.id.adjustmentValue);
+
+        // 设置滑动条监听器
+        mAdjustmentSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (!fromUser) return;
+
+                // 将进度值从0-200转换为实际的调整值
+                float value = 0.0f;
+                switch (mCurrentAdjustmentType) {
+                    case 601: // 亮度 -1.0 到 1.0
+                        value = (progress - 100) / 100.0f;
+                        mEditorView.setBrightness(value);
+                        break;
+                    case 602: // 对比度 0.0 到 3.0
+                        value = progress / 66.67f;
+                        mEditorView.setContrast(value);
+                        break;
+                    case 603: // 饱和度 0.0 到 3.0
+                        value = progress / 66.67f;
+                        mEditorView.setSaturation(value);
+                        break;
+                    case 604: // 锐度 -5.0 到 5.0
+                        value = (progress - 100) / 20.0f;
+                        mEditorView.setSharpness(value);
+                        break;
+                }
+
+                // 更新显示的调整值
+                mAdjustmentValue.setText(String.format("%.1f", value));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // 保存调整操作到历史记录
+                float value = 0.0f;
+                switch (mCurrentAdjustmentType) {
+                    case 601: value = mEditorView.getBrightness(); break;
+                    case 602: value = mEditorView.getContrast(); break;
+                    case 603: value = mEditorView.getSaturation(); break;
+                    case 604: value = mEditorView.getSharpness(); break;
+                }
+                saveToHistory(mCurrentFeatureId, mCurrentAdjustmentType, value);
+            }
+        });
 
         // 初始化按钮状态
         updateHistoryButtons();
@@ -193,9 +257,9 @@ public class EditorActivity extends AppCompatActivity {
         mFeatureItems.add(new FeatureItem(1, "裁剪", R.drawable.ic_cutting));
         mFeatureItems.add(new FeatureItem(2, "旋转", R.drawable.ic_rotate));
         mFeatureItems.add(new FeatureItem(3, "滤镜", R.drawable.ic_adjustment));
-        mFeatureItems.add(new FeatureItem(4, "文字", R.drawable.ic_words));
-        mFeatureItems.add(new FeatureItem(5, "贴纸", R.drawable.ic_sticker));
-        mFeatureItems.add(new FeatureItem(6, "调整", R.drawable.ic_filter));
+        mFeatureItems.add(new FeatureItem(4, "调整", R.drawable.ic_filter));
+        mFeatureItems.add(new FeatureItem(5, "文字", R.drawable.ic_words));
+        mFeatureItems.add(new FeatureItem(6, "贴纸", R.drawable.ic_sticker));
 
     }
 
@@ -212,47 +276,56 @@ public class EditorActivity extends AppCompatActivity {
             mCropOverlayView.setVisibility(View.GONE);
         }
 
+        // 隐藏调整滑动条，除非当前功能是调整
+        if (featureId != 4) {
+            mAdjustmentSeekBarContainer.setVisibility(View.GONE);
+        }
+
         // 更新应用按钮状态
         updateApplyButtonState();
 
         switch (featureId) {
             case 1: // 裁剪
-                mSubFeatureItems.add(new SubFeatureItem(101, "自由", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(102, "1:1", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(103, "3:4", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(104, "4:3", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(105, "16:9", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(106, "9:16", R.drawable.ic_arrow_back));
+                mSubFeatureItems.add(new SubFeatureItem(101, "自由", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(102, "1:1", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(103, "3:4", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(104, "4:3", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(105, "16:9", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(106, "9:16", R.drawable.ic_component));
                 break;
             case 2: // 旋转
-                mSubFeatureItems.add(new SubFeatureItem(201, "右旋", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(202, "左旋", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(203, "水平翻转", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(204, "垂直翻转", R.drawable.ic_arrow_back));
+                Toast.makeText(this, "旋转与裁剪适配未完成", Toast.LENGTH_SHORT).show();
+                mSubFeatureItems.add(new SubFeatureItem(201, "右旋", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(202, "左旋", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(203, "水平翻转", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(204, "垂直翻转", R.drawable.ic_component));
                 break;
             case 3: // 滤镜
-                mSubFeatureItems.add(new SubFeatureItem(301, "原图", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(302, "黑白", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(303, "冷色调", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(304, "暖色调", R.drawable.ic_arrow_back));
+                mSubFeatureItems.add(new SubFeatureItem(301, "原图", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(302, "黑白", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(303, "冷色调", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(304, "暖色调", R.drawable.ic_component));
                 break;
 
-            case 4: // 文字
-                mSubFeatureItems.add(new SubFeatureItem(401, "添加文字", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(402, "字体", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(403, "大小", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(404, "颜色", R.drawable.ic_arrow_back));
+            case 5: // 文字
+                Toast.makeText(this, "该功能未完成", Toast.LENGTH_SHORT).show();
+                mSubFeatureItems.add(new SubFeatureItem(401, "添加文字", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(402, "字体", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(403, "大小", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(404, "颜色", R.drawable.ic_component));
                 break;
-            case 5: // 贴纸
-                mSubFeatureItems.add(new SubFeatureItem(501, "表情", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(502, "装饰", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(503, "标签", R.drawable.ic_arrow_back));
+            case 6: // 贴纸
+                Toast.makeText(this, "该功能未完成", Toast.LENGTH_SHORT).show();
+                mSubFeatureItems.add(new SubFeatureItem(501, "表情", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(502, "装饰", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(503, "标签", R.drawable.ic_component));
                 break;
-            case 6: // 调整
-                mSubFeatureItems.add(new SubFeatureItem(601, "亮度", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(602, "对比度", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(603, "饱和度", R.drawable.ic_arrow_back));
-                mSubFeatureItems.add(new SubFeatureItem(604, "锐度", R.drawable.ic_arrow_back));
+            case 4: // 调整
+                mSubFeatureItems.add(new SubFeatureItem(601, "亮度", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(602, "对比度", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(603, "饱和度", R.drawable.ic_component));
+                mSubFeatureItems.add(new SubFeatureItem(604, "锐度", R.drawable.ic_component));
+                mAdjustmentSeekBarContainer.setVisibility(View.VISIBLE);
                 break;
 
 
@@ -333,7 +406,47 @@ public class EditorActivity extends AppCompatActivity {
                         break;
                 }
                 break;
+            case 4: // 调整
+                mCurrentAdjustmentType = subFeatureId;
+                updateAdjustmentUI();
+                break;
         }
+    }
+
+    // 更新调整功能UI
+    private void updateAdjustmentUI() {
+        float currentValue = 0.0f;
+        String label = "";
+        int max = 200;
+        int progress = 100;
+
+        switch (mCurrentAdjustmentType) {
+            case 601: // 亮度
+                label = "亮度";
+                currentValue = mEditorView.getBrightness();
+                progress = (int) (currentValue * 100 + 100); // -1.0 到 1.0 转换为 0 到 200
+                break;
+            case 602: // 对比度
+                label = "对比度";
+                currentValue = mEditorView.getContrast();
+                progress = (int) (currentValue * 66.67f); // 0.0 到 3.0 转换为 0 到 200
+                break;
+            case 603: // 饱和度
+                label = "饱和度";
+                currentValue = mEditorView.getSaturation();
+                progress = (int) (currentValue * 66.67f); // 0.0 到 3.0 转换为 0 到 200
+                break;
+            case 604: // 锐度
+                label = "锐度";
+                currentValue = mEditorView.getSharpness();
+                progress = (int) (currentValue * 20 + 100); // -5.0 到 5.0 转换为 0 到 200
+                break;
+        }
+
+        mAdjustmentLabel.setText(label);
+        mAdjustmentValue.setText(String.format("%.1f", currentValue));
+        mAdjustmentSeekBar.setProgress(progress);
+        mAdjustmentSeekBar.setMax(max);
     }
     private void syncCropRegionToRenderer() {
         float[] crop = mCropOverlayView.getCropRegion();

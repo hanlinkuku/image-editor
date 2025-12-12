@@ -198,6 +198,72 @@ public class ImageEditorView extends GLSurfaceView {
         }
     }
 
+    // 调整参数接口
+    public void setBrightness(float brightness) {
+        if (mRenderer != null) {
+            mRenderer.setBrightness(brightness);
+        }
+    }
+
+    public void setContrast(float contrast) {
+        if (mRenderer != null) {
+            mRenderer.setContrast(contrast);
+        }
+    }
+
+    public void setSaturation(float saturation) {
+        if (mRenderer != null) {
+            mRenderer.setSaturation(saturation);
+        }
+    }
+
+    public void setSharpness(float sharpness) {
+        if (mRenderer != null) {
+            mRenderer.setSharpness(sharpness);
+        }
+    }
+    
+    // 批量设置调整参数，减少render调用次数，提高性能
+    public void setAdjustments(float brightness, float contrast, float saturation, float sharpness) {
+        if (mRenderer != null) {
+            mRenderer.setAdjustments(brightness, contrast, saturation, sharpness);
+        }
+    }
+
+    public float getBrightness() {
+        if (mRenderer != null) {
+            return mRenderer.getBrightness();
+        }
+        return 0.0f;
+    }
+
+    public float getContrast() {
+        if (mRenderer != null) {
+            return mRenderer.getContrast();
+        }
+        return 1.0f;
+    }
+
+    public float getSaturation() {
+        if (mRenderer != null) {
+            return mRenderer.getSaturation();
+        }
+        return 1.0f;
+    }
+
+    public float getSharpness() {
+        if (mRenderer != null) {
+            return mRenderer.getSharpness();
+        }
+        return 0.0f;
+    }
+
+    public void resetAdjustments() {
+        if (mRenderer != null) {
+            mRenderer.resetAdjustments();
+        }
+    }
+
     // 导出相关
     public void setOnExportListener(ImageEditorRenderer.OnExportListener listener) {
         if (mRenderer != null) {
